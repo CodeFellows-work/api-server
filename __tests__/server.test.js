@@ -1,48 +1,88 @@
 'use strict';
 
-require('dotenv').config();
-const { server } = require('../src/server-phase-3.js');
+const server = require('../src/server.js');
+const data = require('../src/models/index.js');
 const supertest = require('supertest');
-const mockRequest = supertest(server);
 
-const { db } = require('../src/models/index.js');
+const request = supertest(server.app);
 
-//  Initializing / Tearing down your database before and after your tests finish.
 beforeAll(async () => {
-  await db.sync();
+  await data.db.sync();
 });
 afterAll(async () => {
-  await db.drop();
+  await data.db.drop();
 });
 
-describe('web server', () => {
+describe('testing the server', () => {
 
-  // These tests are wired with async/await --- so much cleaner!
-  it('should respond with a 404 on an invalid method', async () => {
-    const response = await mockRequest.put('/hello');
-    expect(response.status).toBe(404);
+  test('testing a 200 for GET `/food`', async () => {
+    const response = await request.get('/food');
+    expect(response.status).toEqual(200);
+    expect(response.body).toEqual([]);
   });
 
-  // LEAD YOUR CLASS IN A STRATEGY SESSION
-  // Rather than write the tests for them, have them identify how they would write these tests...
-
-  it('can add a record', async () => {
-
+  test('testing a 200 for POST `/food`', async () => {
+    const response = await request.post('/food').send({
+      name: 'test',
+      calories: 100
+    });
+    expect(response.status).toEqual(200);
+    expect(response.body.name).toEqual('test');
   });
 
-  it('can get a list of records', async () => {
-
+  test('testing a 200 for GET `/food/:foodId`', async () => {
+    const response = await request.get(`/food/1`);
+    expect(response.status).toEqual(200);
+    expect(response.body.name).toEqual('test');
   });
 
-  it('can get a record', async () => {
-
+  test('testing a 200 for PUT `/food/:foodId`', async () => {
+    const response = await request.put('/food/1').send({
+      name: 'new test',
+    });
+    expect(response.status).toEqual(200);
+    expect(response.body.name).toEqual('new test');
   });
 
-  it('can update a record', async () => {
-
+  test('testing a 200 for DELETE `/food/:foodId`', async () => {
+    const response = await request.delete('/food/1');
+    expect(response.status).toEqual(204);
   });
 
-  it('can delete a record', async () => {
+  //////// Testing Clothes ////////
 
+  test('testing a 200 for GET `/clothes`', async () => {
+    const response = await request.get('/clothes');
+    expect(response.status).toEqual(200);
+    expect(response.body).toEqual([]);
   });
-});
+
+  test('testing a 200 for POST `/clothes`', async () => {
+    const response = await request.post('/clothes').send({
+      name: 'test',
+      type: 'test'
+    });
+    expect(response.status).toEqual(200);
+    expect(response.body.name).toEqual('test');
+  });
+
+  test('testing a 200 for GET `/clothes/:clothesId`', async () => {
+    const response = await request.get(`/clothes/1`);
+    expect(response.status).toEqual(200);
+    expect(response.body.name).toEqual('test');
+  });
+
+  test('testing a 200 for PUT `/clothes/:clothesId`', async () => {
+    const response = await request.put('/clothes/1').send({
+      name: 'new test',
+    });
+    expect(response.status).toEqual(200);
+    expect(response.body.name).toEqual('new test');
+  });
+
+  test('testing a 200 for DELETE `/car/:clothesId`', async () => {
+    const response = await request.delete('/clothes/1');
+    expect(response.status).toEqual(204);
+  });
+
+}); 

@@ -1,27 +1,30 @@
 'use strict';
 
-// connects to our database depending on the URI set as an environment variable, 
-const POSTGRES_URI = process.env.NODE_ENV === 'test' ? 'sqlite:memory:' : process.env.DATABASE_URL;
-const { Sequelize, DataTypes } = require('sequelize');
+require('dotenv').config();
+// heroku uses this naming convention
+const DATABASE_URL = process.env.DATABASE_URL || 'sqlite:memory:';
 
-// Configuration is environment dependent.  Where is our code running in "development" and "test" vs "deployed"?
-let sequelizeOptions = process.env.NODE_ENV === 'production'
-  ? {
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false,
-      }
+// We added this to our script, so that we can provide some info about our environement (Dev / test / production)
+const NODE_ENV = process.env.NODE_ENV;
+
+// Sequelize lets us create data models, DataType represent the Types of data we can create in SQL
+const { Sequelize, DataTypes } = require('sequelize');
+const food = require('./food.js');
+const clothes = require('./clothes.js')
+
+// analogous to the express()
+let sequelize = new Sequelize(DATABASE_URL, NODE_ENV === 'production' ? {
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false,
     }
   }
-  : {};
-let sequelize = new Sequelize(POSTGRES_URI, sequelizeOptions);
-
-// our schema definitions
-const people = require('./people.model.js');
+} : {});
 
 module.exports = {
-  // exporting sequelize instance and Models configuring your data layer.
-  db: sequelize,
-  People: people(sequelize, DataTypes),
-};
+  db: sequelize, // we need to use this in our entry file, and our test file to tell our environments we are preparing to do CRUD.
+  food: food(sequelize, DataTypes),
+  clothes: clothes(sequelize, DataTypes),
+
+}
