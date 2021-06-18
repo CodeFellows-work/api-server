@@ -4,11 +4,11 @@ const clothesModel = (sequelize, DataTypes) => {
     return sequelize.define('Clothes', {
     name: {
         type: DataTypes.STRING,
-        required: true,
+        allowNull: false
     },
     type: {
         type: DataTypes.STRING,
-        required: true
+        allowNull: false
     }
     });
 }
